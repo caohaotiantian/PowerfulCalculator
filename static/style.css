@@ -1,0 +1,127 @@
+body {
+    max-width: 650px;
+    margin: 40px auto;
+    font-family: "Roboto";
+    font-size: 12pt;
+}
+
+.clickable-code code {
+    cursor: pointer;
+}
+
+.fade-out {
+    opacity: 0 !important;
+
+}
+
+.fade-in {
+    opacity: 1 !important;
+}
+
+#output {
+    transition: opacity .1s;
+    opacity: 0;
+}
+
+.hide {
+    display: none;
+}
+
+#actions button {
+    height: 40px;
+    margin-left: 0px !important;
+    margin-right: 4px !important;
+    margin-bottom: 2px !important;
+    margin-top: 2px !important;
+}
+
+table tr td {
+    vertical-align: middle !important;
+}
+
+.fade-in {
+    opacity: 1;
+    animation-name: fadeInOpacity;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-in;
+    animation-duration: .5s;
+}
+
+@keyframes fadeInOpacity {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@media only screen and (max-width: 700px) {
+    body {
+        margin: 18px;
+    }
+
+    .subtitle {
+        display: none;
+    }
+
+    #plot {
+        max-width: 534px;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    body {
+        margin: 18px;
+    }
+
+    .subtitle {
+        display: none;
+    }
+
+    #plot {
+        max-width: 434px;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    body {
+        margin: 18px;
+    }
+
+    .subtitle {
+        display: none;
+    }
+
+    #plot {
+        max-width: 334px;
+    }
+}
+
+@media only screen and (max-width: 400px) {
+    body {
+        margin: 18px;
+    }
+
+    .subtitle {
+        display: none;
+    }
+
+    #plot {
+        max-width: 234px;
+    }
+}
+
+@media only screen and (max-width: 300px) {
+    body {
+        margin: 18px;
+    }
+
+    .subtitle {
+        display: none;
+    }
+
+    #plot {
+        max-width: 134px;
+    }
+}

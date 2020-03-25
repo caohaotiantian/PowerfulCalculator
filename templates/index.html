@@ -1,0 +1,310 @@
+<!DOCTYPE html> {% raw %}
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>微积分计算器</title>
+    <link rel="shortcut icon" type="image/png" href="/static/favicon.ico"/>
+    <link rel="stylesheet" href="/static/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/static/fonts.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="/static/style.css"/>
+    <script src="/static/vue.js"></script>
+
+</head>
+<body>
+<div id="app">
+
+    <div class="text-center">
+        <h1>$\oint$<small class="subtitle">微积分计算器</small></h1>
+    </div>
+
+    <div class="card border-primary mb-3">
+        <div class="card-header">输入</div>
+        <div class="card-body">
+            <p class="card-text">请输入待计算的表达式 </p>
+            <input id="function" placeholder="例如: 2*x^2 - y^2" class="form-control" v-model.lazy="expression"
+                   v-on:change="parse"/>
+            <div v-if="expression" class="text-right">
+                <hr/>
+                <button class="btn btn-primary" v-on:click="set('')" type="button">清空输入</button>
+            </div>
+            <div class="clickable-code" v-if="!expression" v-bind:class="[ !expression ? 'fade-in' : '' ]">
+                <hr/>
+                <p>
+                    如下的表达式是可以被接受的:
+                <ul>
+                    <li>基本计算: <code v-on:click="set('x')">x</code>, <code v-on:click="set('x^2')">x^2</code>, <code
+                            v-on:click="set('2^x')">2^x</code>, <code v-on:click="set('1/x')">1/x</code>, <code
+                            v-on:click="set('sqrt(x)')">sqrt</code>, <code v-on:click="set('exp(x)')">exp</code>, <code
+                            v-on:click="set('log(x)')">log</code></li>
+                    <li>多项式计算: <code v-on:click="set('x*y')">x*y</code>, <code
+                            v-on:click="set('2*x^2+y')">2*x^2+y</code>,
+                        <code v-on:click="set('sqrt(x^2 + y^2 + 1)')">sqrt(x^2 + y^2 + 1)</code>, <code
+                                v-on:click="set('(-3*x)/(x^2+y^2+1)')">(-3*x)/(x^2+y^2+1)</code></li>
+                    <li>三角函数计算: <code v-on:click="set('sin(x)')">sin</code>, <code v-on:click="set('cos(x)')">cos</code>,
+                        <code v-on:click="set('tan(x)')">tan</code>,
+                        <code v-on:click="set('csc(x)')">csc</code>, <code v-on:click="set('sec(x)')">sec</code>, <code
+                                v-on:click="set('cot(x)')">cot</code>, <code v-on:click="set('asin(x)')">asin</code>,
+                        <code v-on:click="set('acos(x)')">acos</code>, <code v-on:click="set('atan(x)')">atan</code>,
+                        <code v-on:click="set('sinh(x)')">sinh</code>, <code v-on:click="set('cosh(x)')">cosh</code>,
+                        <code v-on:click="set('tanh(x)')">tanh</code></li>
+                    <li>等式计算: <code v-on:click="set('a*x^2 + b*x + c = 0')">a*x^2 + b*x + c = 0</code>, <code
+                            v-on:click="set('a / b = c / d^3')">a / b = c / d^3</code></li>
+                    <li>不等式计算: <code v-on:click="set('sqrt(x) > x')">sqrt(x) > x</code></li>
+                    <li>矩阵: <code v-on:click="set('[1,2,3]')">[1,2,3]</code>, <code
+                            v-on:click="set('[[1,2],[3,4]]')">[[1,2],[3,4]]</code>, <code
+                            v-on:click="set('ones(5)-eye(5)')">ones(5)-eye(5)</code></li>
+                    <li>参数矩阵: <code v-on:click="set('[sin(2*t), cos(3*t)]')">[sin(2*t), cos(3*t)]</code>, <code
+                            v-on:click="set('[cos(3*t), sin(3*t), t]')">[cos(3*t), sin(3*t), t]</code>, <code
+                            v-on:click="set('[t, sin(3*t), 0]')">[t, sin(3*t), 0]</code></li>
+                    <li>极坐标: <code v-on:click="set('cos(phi)')">cos(phi)</code>, <code
+                            v-on:click="set('cos(6*phi)+2')">cos(6*phi)+2</code>, <code
+                            v-on:click="set('cos(6*phi+0.2*phi)+2')">cos(6*phi+0.2*phi)+2</code></li>
+                    <li>列表: <code v-on:click="set('1,2,3,4')">1,2,3,4</code>, <code v-on:click="set('1 2 3 4')">1 2 3
+                        4</code></li>
+                    <li>图: <code
+                            v-on:click="set('Matrix([[ 0.0,  6.0, 16.0, 42.0, 72.0,  0.0,  7.0, 18.0],[ 6.0,  0.0, 36.0, 28.0, 24.0, 45.0,  9.0, 42.0],[16.0, 36.0,  0.0,  0.0, 54.0,  0.0, 32.0, 54.0],[42.0, 28.0,  0.0,  0.0, 56.0, 63.0, 10.0, 14.0],[72.0, 24.0, 54.0, 56.0,  0.0, 72.0, 72.0, 18.0],[ 0.0, 45.0,  0.0, 63.0, 72.0,  0.0, 32.0, 10.0],[ 7.0,  9.0, 32.0, 10.0, 72.0, 32.0,  0.0, 63.0],[18.0, 42.0, 54.0, 14.0, 18.0, 10.0, 63.0,  0.0]])')">8x8
+                        weighted graph</code></li>
+                    <li>随机: <code v-on:click="rand">随便看看</code></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="info" class="card border-secondary mb-3" v-if="parsed && !expression_error">
+        <div class="card-header">表达式</div>
+        <div class="card-body">
+            <p class="card-text" v-if="expression_latex" v-bind:class="[ expression_latex ? 'fade-in' : '' ]">系统推断表达式为：
+                <span id="expression" v-if="!is_ugly">${{ expression_latex }}$</span><span
+                        v-if="is_ugly">$M$</span><span v-if="variables.length > 0">, 其中
+                    {{ variables.map(v => '$' + v + '$').join(', ')}} {{'是变量'}}</span>.
+                <span v-if="is_matrix">这是一个 ${{dimension[0]}} \times {{dimension[1]}}$ 的矩阵</span>
+            </p>
+            <div id="loader" class="progress" v-if="!expression_latex" style="height: 24px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                     aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-secondary mb-3 output" v-if="plot_show">
+        <div class="card-header">作图</div>
+        <div class="card-body">
+            <div class="text-center" v-if="plot_base64">
+                <img id="plot" :src="plot_base64" v-bind:class="[ plot_base64 ? 'fade-in' : '' ]"/>
+            </div>
+            <div id="loader" class="progress" v-if="!plot_base64 && !plot_error" style="height: 24px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                     aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%"></div>
+            </div>
+            <div v-if="plot_error">绘图时出错:<br/>
+                <pre>{{plot_error}}</pre>
+                </span><br/>
+                <button v-if="variables.length == 1" class="btn btn-primary" v-on:click="plot" type="button">再试一次
+                </button>
+            </div>
+            <div v-if="(plot_base64 || plot_error) && (variables.length == 1 || variables.length == 2 || dimension[0] > 1 || dimension[1] > 1)"
+                 class="text-right">
+                <hr/>
+                <button v-if="variables.length == 1" class="btn btn-primary" v-on:click="plot" type="button">直角坐标系
+                </button>
+                <button v-if="variables.length == 1" class="btn btn-primary" v-on:click="polar" type="button">极坐标系
+                </button>
+                <button v-if="(dimension[1] == 2 || dimension[1] == 3 || dimension[0] == 2 || dimension[0] == 3) && dimension[0] > 0 && variables == 0"
+                        class="btn btn-primary" v-on:click="vplot" type="button">向量
+                </button>
+                <button v-if="variables.length == 2 && is_algebraic" class="btn btn-primary" v-on:click="plot"
+                        type="button">曲面图
+                </button>
+                <button v-if="variables.length == 2 && is_algebraic" class="btn btn-primary" v-on:click="cplot"
+                        type="button">等高线图
+                </button>
+                <button v-if="variables.length == 1 && is_matrix && dimension[1] == 1 && (dimension[0] == 2 || dimension[0] == 3)"
+                        class="btn btn-primary" v-on:click="pplot" type="button">参数方程作图
+                </button>
+                <button v-if="variables.length == 0 && is_matrix && dimension[0] >= 2 && dimension[1] >= 2"
+                        class="btn btn-primary" v-on:click="mplot" type="button">矩阵图
+                </button>
+                <button v-if="variables.length == 0 && is_square_matrix" class="btn btn-primary" v-on:click="graph"
+                        type="button">图论
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="actions" class="card border-secondary mb-3" v-if="variables.length > 0 || is_matrix">
+        <div class="card-header">操作</div>
+        <div class="card-body">
+            <p>以下操作对于 <span v-if="!is_ugly">${{expression_latex}}$</span> 而言可用<span v-if="is_ugly">$M$</span>:</p>
+            <table class="table" style="margin-bottom: 0">
+                <tbody>
+                <tr v-if="variables.length > 0">
+                    <td>代数</td>
+                    <td>
+                        <button type="button" class="btn btn-primary" v-on:click="simplify">表达式化简</button>
+                        <button type="button" class="btn btn-primary" v-on:click="expand(false)">展开</button>
+                        <button type="button" class="btn btn-primary" v-on:click="expand(true)">完全展开</button>
+                        <button type="button" class="btn btn-primary" v-on:click="factor">因式分解</button>
+                        <button v-if="!(is_equality || is_inequality || is_matrix)" type="button"
+                                class="btn btn-primary" v-on:click="factors">因子列表
+                        </button>
+                        <button v-if="is_equality || is_inequality" v-for="v in variables" type="button"
+                                class="btn btn-primary" v-on:click="solveFor(v)">求解 ${{v}}$
+                        </button>
+                    </td>
+                </tr>
+                <tr v-if="variables.length > 0 && !is_equality && !is_inequality">
+                    <td style="width: 140px;">微积分</td>
+                    <td>
+                        <button v-if="variables.length == 1" type="button" class="btn btn-primary"
+                                v-on:click="diff(variables[0])">$\textrm{d} / \textrm{d}{{variables[0]}}$
+                        </button>
+                        <button v-if="variables.length == 1" type="button" class="btn btn-primary"
+                                v-on:click="diff2(variables[0])">$\textrm{d}^2 / \textrm{d}{{variables[0]}}^2$
+                        </button>
+                        <button v-if="variables.length > 1" v-for="v in variables" type="button" class="btn btn-primary"
+                                v-on:click="diff(v)">$\partial / \partial {{ v }}$
+                        </button>
+                        <button v-if="variables.length > 1" v-for="v in variables" type="button" class="btn btn-primary"
+                                v-on:click="diff2(v)">$\partial^2 / \partial {{ v }}^2$
+                        </button>
+                        <button v-if="variables.length > 0" v-for="v in variables" type="button" class="btn btn-primary"
+                                v-on:click="integrate(v)">$\int d{{v}}$
+                        </button>
+                        <button v-if="variables.length == 1" type="button" class="btn btn-primary"
+                                v-on:click="integrate(variables[0], '0', 'T')">$\int_0^T$
+                        </button>
+                        <button v-if="variables.length == 1" type="button" class="btn btn-primary"
+                                v-on:click="integrate(variables[0], '-oo', 'oo')">$\int_{-\infty}^{+\infty}$
+                        </button>
+                        <button v-if="variables.length > 1 && is_algebraic" type="button" class="btn btn-primary"
+                                v-on:click="grad">$\nabla f$
+                        </button>
+                        <button v-if="variables.length == 2 && is_algebraic && false" type="button"
+                                class="btn btn-primary"
+                                v-on:click="showParameters(console.log('dirdiff'), '$D_\\hat{u} f$', 'Point $P$', 'Direction $\\hat{u}$', '', 'The directional derivative $D_\\hat{u} f = \\nabla f \\cdot \\hat{u}$ requires a point $P$ at which the gradient is evaluated and a directional unit vector $\\hat{u}$ in which the derivative is taken. If $\\hat{u}$ is not a unit vector, it will be normalized. If $\\hat{u}$ is not provided, the derivative will be in the direction of the gradient.')">
+                            $D_\hat{u} f$
+                        </button>
+                        <button v-if="variables.length == 2 && (is_algebraic || is_square_matrix)" type="button"
+                                class="btn btn-primary" v-on:click="hessian">海森矩阵
+                        </button>
+                    </td>
+                </tr>
+                <tr v-if="is_matrix">
+                    <td>线性代数</td>
+                    <td>
+                        <button v-if="dimension[0] > 1 && dimension[1] == 1" type="button" class="btn btn-primary"
+                                v-on:click="vlength">$\| M\ \|$
+                        </button>
+                        <button type="button" class="btn btn-primary" v-on:click="transpose">$M^\textrm{T}$</button>
+                        <button v-if="is_square_matrix" type="button" class="btn btn-primary" v-on:click="inverse">
+                            $M^{-1}$
+                        </button>
+                        <button v-if="is_square_matrix" type="button" class="btn btn-primary" v-on:click="det">
+                            $\textrm{det}(M)$
+                        </button>
+                        <button v-if="is_square_matrix" type="button" class="btn btn-primary" v-on:click="eigen">特征
+                        </button>
+                    </td>
+                </tr>
+                <tr v-if="is_graph && variables.length == 0">
+                    <td>图论</td>
+                    <td>
+                        <button type="button" class="btn btn-primary" v-on:click="graphInfo">$G$</button>
+                        <button v-if="!is_weighted" type="button" class="btn btn-primary" v-on:click="graphComplement">
+                            $G^\textrm{C}$
+                        </button>
+                        <button type="button" class="btn btn-primary" v-on:click="graphDegree">$\textrm{deg}(G)$
+                        </button>
+                        <button v-if="!is_directed" type="button" class="btn btn-primary" v-on:click="graphMst">MST
+                        </button>
+                        <button v-if="false" type="button" class="btn btn-primary"
+                                v-on:click="showParameters(graphDijkstra, 'Dijkstra', 'Starting point $P$', 'End point $Q$', '', 'Find the shortest path between a point $P$ and a point $Q$ with Dijkstra\'s algorithm. The index for the point can be read from the graph plot.')">
+                            Dijkstra
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card border-secondary mb-3 output" v-if="action_show">
+        <div class="card-header">计算结果</div>
+        <div class="card-body">
+            <div v-if="parameter_show" :class="[ parameter_show ? 'fade-in' : '' ]">
+                <p>该操作 {{parameter_func_name}} 需要如下参数:</p>
+                <table class="table">
+                    <tr v-if="parameter_a_name">
+                        <td>{{parameter_a_name}}:</td>
+                        <td><input type="text" class="form-control" v-model="parameter_a_value"/></td>
+                    </tr>
+                    <tr v-if="parameter_b_name">
+                        <td>{{parameter_b_name}}:</td>
+                        <td><input type="text" class="form-control" v-model="parameter_b_value"/></td>
+                    </tr>
+                    <tr v-if="parameter_c_name">
+                        <td>{{parameter_c_name}}:</td>
+                        <td><input type="text" class="form-control" v-model="parameter_c_value"/></td>
+                    </tr>
+                </table>
+                <p v-if="parameter_explain">
+                    {{parameter_explain}}
+                <hr/>
+                </p>
+                <div class="text-right">
+                    <button type="button" class="btn btn-primary" class="form-control"
+                            v-on:click="parameter_func(parameter_a_value, parameter_b_value, parameter_c_value)">
+                        {{parameter_func_name}}
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="action_out || action_out_list.length > 0" id="action-result"
+                 :class="[ action_out ? 'fade-in' : '' ]" :key="action_out">
+                <div>{{action_in}}</div>
+                <hr/>
+                <div>{{action_out}}</div>
+                <ul v-if="action_out_list">
+                    <li v-for="item in action_out_list">{{item}}</li>
+                </ul>
+            </div>
+            <div v-if="action_image" :class="[ action_out ? 'fade-in' : '' ]" class="text-center">
+                <hr/>
+                <img :src="action_image">
+            </div>
+            <div v-if="action_link" class="text-right">
+                <hr/>
+                <button class="btn btn-primary" type="button" v-on:click="set(action_link);">将此作为输入值 ></button>
+            </div>
+            <div v-if="!(action_out || action_out_list.length > 0) && !action_error && !parameter_show">
+                <div id="loader" class="progress" style="height: 24px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                         aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%"></div>
+                </div>
+            </div>
+            <div v-if="action_error">
+                出错啦！！！:<br/>
+                <pre>{{action_error}}</pre>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script type="text/x-mathjax-config">
+    // Use $ for inline equations.
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script type="text/javascript" src="/static/http.js"></script>
+<script type="text/javascript" src="/static/helpers.js"></script>
+<script type="text/javascript" src="/static/app.js"></script>
+</body>
+</html>
+{% endraw %}
