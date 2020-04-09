@@ -1,21 +1,21 @@
+import graphplot
+from sympy.parsing.sympy_parser import parse_expr
+from sympy import (Matrix, expand, factor, factor_list, integrate, latex,
+                   primitive, simplify, solve)
+from mpl_toolkits.mplot3d import proj3d
+from matplotlib.patches import FancyArrowPatch
+from matplotlib import cm
+import numpy as np
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
+import matplotlib
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__, static_url_path="/static", static_folder="static")
 
-import matplotlib
 
 matplotlib.use('Agg')
-import base64
-from io import BytesIO
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib import cm
-from matplotlib.patches import FancyArrowPatch
-from mpl_toolkits.mplot3d import proj3d
-from sympy import (Matrix, expand, factor, factor_list, integrate, latex,
-                   primitive, simplify, solve)
-from sympy.parsing.sympy_parser import parse_expr
-import graph as graphplot
 
 font = {'size': 12}
 matplotlib.rc('font', **font)
@@ -40,8 +40,10 @@ def index():
 
 
 def is_sqr_matrix(M):
-    if not 'Matrix' in str(type(M)): return False
-    if M.shape[0] != M.shape[1]: return False
+    if not 'Matrix' in str(type(M)):
+        return False
+    if M.shape[0] != M.shape[1]:
+        return False
     return True
 
 
@@ -192,7 +194,8 @@ def hessian():
         symbols.sort()
         x = symbols[0]
         y = symbols[1]
-        hessian = Matrix([[ps.diff(x).diff(x), ps.diff(x).diff(y)], [ps.diff(y).diff(x), ps.diff(y).diff(y)]])
+        hessian = Matrix([[ps.diff(x).diff(x), ps.diff(x).diff(y)], [
+                         ps.diff(y).diff(x), ps.diff(y).diff(y)]])
         return jsonify(
             {'in': latex(ps), 'out': latex(hessian), 'hessian': latex(hessian.det()), 'out_expression': str(hessian)})
 
@@ -207,7 +210,8 @@ def integration():
         print('integrate: {}'.format(request.json))
         ps = parse_expr(request.json['expression'], locals())
         var = [s for s in ps.free_symbols if str(s) == request.json['var']][0]
-        limits = (var, request.json['from'], request.json['to']) if len(request.json['to']) > 0 else var
+        limits = (var, request.json['from'], request.json['to']) if len(
+            request.json['to']) > 0 else var
         result = integrate(ps, limits)
         return jsonify({'in': latex(ps), 'out': latex(result), 'var': str(var), 'out_expression': str(result)})
 
@@ -240,8 +244,10 @@ def plot():
         fig.clf()
         if len(ps.free_symbols) == 1:
 
-            X = np.linspace(request.json['xlim'][0], request.json['xlim'][1], 512)
-            Y = np.array([ps.subs(list(ps.free_symbols)[0], x) for x in X]).astype('float')
+            X = np.linspace(request.json['xlim'][0],
+                            request.json['xlim'][1], 512)
+            Y = np.array([ps.subs(list(ps.free_symbols)[0], x)
+                          for x in X]).astype('float')
 
             ax = fig.add_subplot(111)
             ax.plot(X, list(Y), c='purple', lw=3)
@@ -256,8 +262,10 @@ def plot():
 
             var = [str(s) for s in ps.free_symbols]
             var.sort()
-            xs = np.linspace(request.json['xlim'][0], request.json['xlim'][1], 32)
-            ys = np.linspace(request.json['ylim'][0], request.json['ylim'][1], 32)
+            xs = np.linspace(request.json['xlim']
+                             [0], request.json['xlim'][1], 32)
+            ys = np.linspace(request.json['ylim']
+                             [0], request.json['ylim'][1], 32)
             X, Y = np.meshgrid(xs, ys)
             zs = np.array(
                 [expand(ps).subs(var[0], x).subs(var[1], y).evalf() for x, y in zip(np.ravel(X), np.ravel(Y))]).astype(
@@ -348,15 +356,19 @@ def pplot():
 
         if ps.shape == (2, 1):
             ax = fig.add_subplot(111)
-            ts = np.linspace(request.json['xlim'][0], request.json['xlim'][1], a ** 2)
-            Y = np.array([ps.subs(var[0], t).evalf() for t in ts]).astype('float')
+            ts = np.linspace(request.json['xlim']
+                             [0], request.json['xlim'][1], a ** 2)
+            Y = np.array([ps.subs(var[0], t).evalf()
+                          for t in ts]).astype('float')
             xs = [x[0] for x in Y]
             ys = [x[1] for x in Y]
             plt.plot(xs, ys, c="purple", lw=3)
             plt.grid(ls='dashed', alpha=0.5)
         elif ps.shape == (3, 1):
-            ts = np.linspace(request.json['xlim'][0], request.json['xlim'][1], a ** 2)
-            Y = np.array([expand(ps).subs(var[0], t).evalf() for t in ts]).astype('float')
+            ts = np.linspace(request.json['xlim']
+                             [0], request.json['xlim'][1], a ** 2)
+            Y = np.array([expand(ps).subs(var[0], t).evalf()
+                          for t in ts]).astype('float')
             xs = [x[0] for x in Y]
             ys = [x[1] for x in Y]
             zs = [x[2] for x in Y]
@@ -366,9 +378,10 @@ def pplot():
             ax.set_ylabel('${}$'.format(latex(ps[1])))
             ax.set_zlabel('${}$'.format(latex(ps[2])))
         else:
-            raise ValueError('需要输入 3x1 或 2x1 的矩阵输入')
+            raise ValueError('需要输入 3 x 1 或 2 x 1 的矩阵输入')
 
-        plt.title('Parametric plot of $\\left< {} \\right>$'.format(', '.join([latex(p) for p in ps])))
+        plt.title('Parametric plot of $\\left< {} \\right>$'.format(
+            ', '.join([latex(p) for p in ps])))
 
         data = BytesIO()
         fig.savefig(data)
@@ -395,7 +408,7 @@ def vplot():
         if not 'Matrix' in str(type(ps)):
             raise ValueError('需要矩阵输入')
         if not (ps.shape[1] == 2 or ps.shape[1] == 3 or ps.shape[0] == 2 or ps.shape[0] == 3):
-            raise ValueError('需要 MxN 的矩阵，其中 M > 0 且 N = 2 或 3')
+            raise ValueError('需要 M x N 的矩阵，其中 M > 0 且 N = 2 或 3')
 
         fig = plt.figure(figsize=(5, 5))
         fig.clf()
@@ -423,14 +436,17 @@ def vplot():
             Y = np.array([np.sin(y) for y in np.linspace(0, 2 * np.pi, 64)])
             zeros = np.zeros(X.shape)
 
-            plt.plot(X, zeros, zeros, c='darkgray', lw=2, alpha=0.33, ls='dashed')
-            plt.plot(zeros, X, zeros, c='darkgray', lw=2, alpha=0.33, ls='dashed')
+            plt.plot(X, zeros, zeros, c='darkgray',
+                     lw=2, alpha=0.33, ls='dashed')
+            plt.plot(zeros, X, zeros, c='darkgray',
+                     lw=2, alpha=0.33, ls='dashed')
 
-            plt.plot(zeros, zeros, X, c='darkgray', lw=2, alpha=0.33, ls='dashed')
+            plt.plot(zeros, zeros, X, c='darkgray',
+                     lw=2, alpha=0.33, ls='dashed')
 
             for i in range(U.shape[0]):
-                x = U[i][0];
-                y = U[i][1];
+                x = U[i][0]
+                y = U[i][1]
                 z = U[i][2]
                 magn = np.sqrt(x ** 2 + y ** 2 + z ** 2)
                 ax.add_artist(
@@ -455,7 +471,7 @@ def vplot():
             plt.plot(X, Y, c='darkgray', lw=3)
 
             for i in range(U.shape[0]):
-                x = U[i][0];
+                x = U[i][0]
                 y = U[i][1]
                 magn = np.sqrt(x ** 2 + y ** 2)
                 plt.annotate("", xy=(x / magn, y / magn), xytext=(0, 0),
@@ -527,14 +543,16 @@ def polarplot():
 
         f = ps
         var = list(f.free_symbols)[0]
-        r = np.linspace(request.json['xlim'][0] * np.pi, request.json['xlim'][1] * np.pi, 1024)
+        r = np.linspace(request.json['xlim'][0] * np.pi,
+                        request.json['xlim'][1] * np.pi, 1024)
         theta = [f.subs(var, r).evalf() for r in r]
         ax = plt.subplot(111, projection='polar')
         ax.plot(r, theta, c='purple', lw=4)
         ax.grid(True)
         title = latex(f)
         if 'Matrix' in str(type(f)):
-            title = '\\left<{}\\right>'.format(latex(', '.join([latex(x) for x in f])))
+            title = '\\left<{}\\right>'.format(
+                latex(', '.join([latex(x) for x in f])))
         if len(title) > 60:
             title = '\\left<\\theta\\right>'
         ax.set_title("Polar plot of ${}$".format(title), va='bottom')
@@ -662,7 +680,7 @@ def la_vlength():
         if not 'Matrix' in str(type(ps)):
             raise ValueError('输入应为矩阵')
         if not (ps.shape[0] > 1 and ps.shape[1] == 1):
-            raise ValueError('需要 MxN 的矩阵，其中 M > 1 且 N = 1')
+            raise ValueError('需要 M x N 的矩阵，其中 M > 1 且 N = 1')
 
         product = sum([ps[i] ** 2 for i in range(ps.shape[0])])
         result = simplify(product ** 0.5)
@@ -765,10 +783,12 @@ def graph_info():
 
         G = ps  # np.array(ps).astype('float')
 
-        degree_row = list(np.array(np.diagonal(graphplot.degree_matrix(G))).astype('int'))
+        degree_row = list(np.array(np.diagonal(
+            graphplot.degree_matrix(G))).astype('int'))
         degree_row.sort()
 
-        info = {'degrees': latex(degree_row), 'degrees_sum': str(np.sum(degree_row))}
+        info = {'degrees': latex(degree_row),
+                'degrees_sum': str(np.sum(degree_row))}
 
         return jsonify({'in': latex(ps), 'out': info})
 

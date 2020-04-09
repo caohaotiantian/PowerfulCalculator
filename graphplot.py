@@ -40,7 +40,7 @@ def not_zero(x):
 
 def complement(G):
     if not is_simple(G):
-        raise ValueError('G must be a simple graph.')
+        raise ValueError('图G必须是简单图')
     return np.ones(G.shape[0]) - G - np.eye(G.shape[0])
 
 
@@ -112,33 +112,37 @@ def plot_mst(G, MST):
         for j in range(i, G.shape[1]):
             if G[i, j] != 0:
                 if is_bin:
-                    dot.edge(str(i), str(j), color='red' if MST[i, j] != 0 else 'black')
+                    dot.edge(str(i), str(j),
+                             color='red' if MST[i, j] != 0 else 'black')
                 else:
-                    dot.edge(str(i), str(j), str(G[i, j]), color='red' if MST[i, j] != 0 else 'black')
+                    dot.edge(str(i), str(j), str(
+                        G[i, j]), color='red' if MST[i, j] != 0 else 'black')
     return dot
 
 
 def mst(G, minimum=True):
     if not is_symmetric(G):
-        raise ValueError('G must be undirected.')
+        raise ValueError('图G必须是无向图')
     n = G.shape[0]
     V = list(range(G.shape[0]))
-    D = {(x, y): G[x, y] for x in range(G.shape[0]) for y in range(G.shape[1]) if G[x, y] != 0}
+    D = {(x, y): G[x, y] for x in range(G.shape[0])
+         for y in range(G.shape[1]) if G[x, y] != 0}
     D = sorted(D.items(), key=lambda kv: kv[1], reverse=minimum)
     MST = np.reshape(np.zeros(n * n), (n, n))
     weight = 0
 
     while len(D) > 0:
-        k, d = D.pop();
+        k, d = D.pop()
         x, y = k
         if V[x] != V[y]:
             mi, ma = min(V[x], V[y]), max(V[x], V[y])
             V[x] = V[y] = mi
-            MST[x, y] = d;
+            MST[x, y] = d
             MST[y, x] = d
             weight += d
             for i in range(len(V)):
-                if V[i] == ma: V[i] = mi
+                if V[i] == ma:
+                    V[i] = mi
 
     return MST, weight
 
